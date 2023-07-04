@@ -95,35 +95,42 @@ async function scrapeAndSaveEventDetails(eventLink, folderName) {
 }
 
 async function main() {
-  // Delete upcoming_events folder and its contents
-  fs.rmSync('upcoming_events', { recursive: true, force: true });
 
-  // Delete past_events folder and its contents
-  fs.rmSync('past_events', { recursive: true, force: true });
+  const upcomingEventLinks = await scrapeEvent('https://ra.co/promoters/105908/events');
+  const pastEventLinks = await scrapeEvent('https://ra.co/promoters/105908/past-events');
 
-  const upcomingEventLinks = await scrapeEvent('https://ra.co/promoters/22/events');
-  const pastEventLinks = await scrapeEvent('https://ra.co/promoters/22/past-events');
+  if (upcomingEventLinks.length === 0 && pastEventLinks.length === 0) {
+    console.log('Scrape failed');
+  } else {
+    // Delete upcoming_events folder and its contents
+    fs.rmSync('upcoming_events', { recursive: true, force: true });
 
-  const upcomingEventsFolder = 'upcoming_events';
-  const pastEventsFolder = 'past_events';
+    // Delete past_events folder and its contents
+    fs.rmSync('past_events', { recursive: true, force: true });
 
-  // Create folders for upcoming events and past events
-  fs.mkdirSync(upcomingEventsFolder, { recursive: true });
-  fs.mkdirSync(pastEventsFolder, { recursive: true });
+    const upcomingEventsFolder = 'upcoming_events';
+    const pastEventsFolder = 'past_events';
 
-  // Scrape and save details for upcoming events
-  for (let i = 0; i < upcomingEventLinks.length; i++) {
-    const folderName = path.join(upcomingEventsFolder, `event${i + 1}`);
-    fs.mkdirSync(folderName, { recursive: true });
-    await scrapeAndSaveEventDetails(upcomingEventLinks[i], folderName);
+    // Create folders for upcoming events and past events
+    fs.mkdirSync(upcomingEventsFolder, { recursive: true });
+    fs.mkdirSync(pastEventsFolder, { recursive: true });
+
+    // Scrape and save details for upcoming events
+    for (let i = 0; i < upcomingEventLinks.length; i++) {
+      const folderName = path.join(upcomingEventsFolder, `event${i + 1}`);
+      fs.mkdirSync(folderName, { recursive: true });
+      await scrapeAndSaveEventDetails(upcomingEventLinks[i], folderName);
+    }
+
+    // Scrape and save details for past events
+    for (let i = 0; i < pastEventLinks.length; i++) {
+      const folderName = path.join(pastEventsFolder, `event${i + 1}`);
+      fs.mkdirSync(folderName, { recursive: true });
+      await scrapeAndSaveEventDetails(pastEventLinks[i], folderName);
+    }
+
   }
 
-  // Scrape and save details for past events
-  for (let i = 0; i < pastEventLinks.length; i++) {
-    const folderName = path.join(pastEventsFolder, `event${i + 1}`);
-    fs.mkdirSync(folderName, { recursive: true });
-    await scrapeAndSaveEventDetails(pastEventLinks[i], folderName);
-  }
 }
 
 main().catch((error) => console.error(error));

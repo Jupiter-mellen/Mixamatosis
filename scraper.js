@@ -22,6 +22,15 @@ async function scrapeEvent(url) {
       // Add delay to mimic human-like behavior
       await page.waitForTimeout(2000);
 
+      // Check if CAPTCHA element exists
+      const captchaElement = await page.$('.g-recaptcha');
+      if (captchaElement) {
+        console.log('CAPTCHA found. Please solve the CAPTCHA to proceed.');
+        await browser.close();
+        return eventLinks;
+      }
+
+
       // Get the links of all the events
       eventLinks = await page.$$eval(
         'span[data-test-id="event-listing-heading"]',
@@ -41,8 +50,16 @@ async function scrapeEvent(url) {
   }
 
   await browser.close();
-  console.log(`Event-link[s] saved ${eventLinks}`);
-  return eventLinks;
+  if (eventLinks.length === 0) {
+    console.log("Link scraping failed. No event links found.");
+    return eventLinks;
+  }
+  else {
+    console.log(`Event-link[s] saved ${eventLinks}`);
+    return eventLinks;
+  }
+  
+
 }
 
 module.exports = scrapeEvent;
